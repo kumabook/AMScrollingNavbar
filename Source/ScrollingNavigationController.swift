@@ -77,6 +77,7 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
   var maxDelay: CGFloat = 0
   var scrollableView: UIView?
   var lastContentOffset = CGFloat(0.0)
+  var horizontalValidDistance: CGFloat = 20
 
   /**
    Start scrolling
@@ -86,7 +87,7 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
    - parameter scrollableView: The view with the scrolling content that will be observed
    - parameter delay: The delay expressed in points that determines the scrolling resistance. Defaults to `0`
    */
-  open func followScrollView(_ scrollableView: UIView, delay: Double = 0) {
+  open func followScrollView(_ scrollableView: UIView, delay: Double = 0, horizontalValidDistance horizontal: Double = 20) {
     self.scrollableView = scrollableView
 
     gestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(ScrollingNavigationController.handlePan(_:)))
@@ -100,6 +101,7 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
     maxDelay = CGFloat(delay)
     delayDistance = CGFloat(delay)
     scrollingEnabled = true
+    self.horizontalValidDistance = CGFloat(horizontal)
   }
 
   /**
@@ -185,7 +187,7 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
         let delta = lastContentOffset - translation.y
         lastContentOffset = translation.y
 
-        if shouldScrollWithDelta(delta) {
+        if abs(translation.x) < horizontalValidDistance && shouldScrollWithDelta(delta) {
           scrollWithDelta(delta)
         }
       }
