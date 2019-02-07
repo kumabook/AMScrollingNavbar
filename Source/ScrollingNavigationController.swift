@@ -173,6 +173,7 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
   var scrollSpeedFactor: CGFloat = 1
   var collapseDirectionFactor: CGFloat = 1 // Used to determine the sign of content offset depending of collapse direction
   var previousState: NavigationBarState = .expanded // Used to mark the state before the app goes in background
+  var horizontalValidDistance: CGFloat = 20
   
   /**
    Start scrolling
@@ -186,7 +187,7 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
    - parameter additionalOffset : The additional distance that the navigation bar can move up after reaching the top of the screen. Defaults to 0
    - parameter followers: An array of `NavigationBarFollower`s that will follow the navbar. The wrapper holds the direction that the view will follow
    */
-  open func followScrollView(_ scrollableView: UIView, delay: Double = 0, scrollSpeedFactor: Double = 1, collapseDirection: NavigationBarCollapseDirection = .scrollDown, additionalOffset: CGFloat = 0, followers: [NavigationBarFollower] = []) {
+  open func followScrollView(_ scrollableView: UIView, delay: Double = 0, scrollSpeedFactor: Double = 1, collapseDirection: NavigationBarCollapseDirection = .scrollDown, additionalOffset: CGFloat = 0, followers: [NavigationBarFollower] = [], horizontalValidDistance horizontal: Double = 20) {
     guard self.scrollableView == nil else {
       // Restore previous state. UIKit restores the navbar to its full height on view changes (e.g. during a modal presentation), so we need to restore the status once UIKit is done
       switch previousState {
@@ -216,6 +217,7 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
     delayDistance = CGFloat(delay)
     scrollingEnabled = true
     self.additionalOffset = additionalOffset
+    self.horizontalValidDistance = CGFloat(horizontal)
 
     // Save TabBar state (the state is changed during the transition and restored on compeltion)
     if let tab = followers.map({ $0.view }).first(where: { $0 is UITabBar }) as? UITabBar {
@@ -333,7 +335,7 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
       
       if gesture.state != .failed {
         lastContentOffset = translation.y
-        if shouldScrollWithDelta(delta) {
+        if abs(translation.x) < horizontalValidDistance && shouldScrollWithDelta(delta) {
           scrollWithDelta(delta)
         }
       }
